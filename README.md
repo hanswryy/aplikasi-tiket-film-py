@@ -56,41 +56,6 @@ docker compose down -v
 
 The last command is destructive and removes the PostgreSQL volume.
 
-## Seed the Database
-
-The Flask backend does not run migrations or seed data automatically. To seed
-the shared PostgreSQL database, run the existing Prisma seed script from the
-JavaScript backend directory:
-
-```powershell
-cd backend-tiket-film-js
-npx prisma db seed
-```
-
-The current seed script deletes existing users, movies, studios, showtimes,
-bookings, and booked seats before inserting sample data. Do not run it against
-data that must be preserved.
-
-## Rebuild After Changes
-
-After changing backend or frontend source code, rebuild the affected service:
-
-```powershell
-docker compose up -d --build backend
-```
-
-For frontend changes:
-
-```powershell
-docker compose up -d --build frontend
-```
-
-To force a clean backend image build:
-
-```powershell
-docker compose build --no-cache backend
-docker compose up -d backend
-```
 
 ## Local Development Without Docker
 
@@ -146,32 +111,3 @@ Do not run it against a database that contains data you need to preserve.
 
 The Flask migration is for first-time initialization. An existing database
 already created by Prisma should not be upgraded with this initial migration.
-
-## Troubleshooting
-
-### Port already in use
-
-The Docker stack uses ports `8081`, `3001`, and `5434`. Check running containers if one is unavailable:
-
-```powershell
-docker ps
-```
-
-The new stack uses a separate PostgreSQL container and volume, so the old PostgreSQL container can remain running:
-
-```powershell
-docker stop cinema_postgres
-```
-
-### Backend cannot connect to PostgreSQL
-
-Use `postgres:5432` as the database host and port from inside Docker. Do not use `localhost:5434` in the backend container. The Compose configuration already uses the correct internal connection string.
-
-### Backend image is stale
-
-Rebuild the Flask backend image:
-
-```powershell
-docker compose build --no-cache backend
-docker compose up -d backend
-```
