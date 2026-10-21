@@ -1,0 +1,5 @@
+This directory contains Flask-Migrate/Alembic database migrations.
+
+Apply migrations with:
+
+    flask --app app db upgrade

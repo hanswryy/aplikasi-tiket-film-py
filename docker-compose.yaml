@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: tiket-film-flask-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: cinema_db
+    ports:
+      - '5434:5432'
+    volumes:
+      - tiket_film_flask_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d cinema_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend-tiket-film
+      dockerfile: Dockerfile
+    container_name: tiket-film-flask-backend
+    env_file:
+      - ./backend-tiket-film/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgrespassword@postgres:5432/cinema_db
+      JWT_SECRET: your_jwt_secret_key
+      PORT: 3000
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+    ports:
+      - '3001:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend-tiket-film
+      dockerfile: Dockerfile
+    container_name: tiket-film-flask-frontend
+    ports:
+      - '8081:80'
+    depends_on:
+      - backend
+
+volumes:
+  tiket_film_flask_postgres_data:
